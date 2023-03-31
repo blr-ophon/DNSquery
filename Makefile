@@ -27,3 +27,6 @@ clean:
 run: ${EXEC}
 	./$< 
 
+debug: ${EXEC}
+	cgdb ./$< 
+
