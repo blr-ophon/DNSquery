@@ -37,7 +37,7 @@ struct DNSmsg_answer{
     uint16_t rclass;        //set to 1 to indicate the Internet
     uint32_t ttl;           //time to live
     uint16_t rdlength;      //size of following data 
-    void *rdata;
+    char *rdata;
 };
 
 struct DNSmsg{
