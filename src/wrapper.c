@@ -52,11 +52,19 @@ uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
 
     return wrapped_msg;
 }
+uint16_t get_LE_Dword(uint32_t *dword, int *offset){
+    uint32_t num = *dword;
+    num = ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
+        ((num>>8)&0xff00) | ((num<<24)&0xff000000);
+    *offset += 4;
+    return num;
+}
 
-uint16_t get_LE_word(char *data, int *offset){
-    uint16_t word = data[*offset] | ((uint16_t) data[(*offset)+1] << 8);
+uint16_t get_LE_word(uint16_t *word, int *offset){
+    uint16_t num = *word;
+    num = (num >> 8) | (num << 8);
     *offset += 2;
-    return word;
+    return num;
 }
 
 struct DNSmsg DNSmsg_unwrap(char *data, char *answer_databuf){
@@ -64,13 +72,55 @@ struct DNSmsg DNSmsg_unwrap(char *data, char *answer_databuf){
     memset(&unw_msg, 0, sizeof(struct DNSmsg));
     int offset = 0;
 
-    //header
-    unw_msg.header.id = get_LE_word(data, &offset);
-    unw_msg.header.flags = get_LE_word(data, &offset);
-    unw_msg.header.qdcount = get_LE_word(data, &offset);
-    unw_msg.header.ancount = get_LE_word(data, &offset);
-    unw_msg.header.nscount = get_LE_word(data, &offset);
-    unw_msg.header.arcount = get_LE_word(data, &offset);
+    //HEADER
+    unw_msg.header.id = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.header.flags = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.header.qdcount = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.header.ancount = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.header.nscount = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.header.arcount = get_LE_word((uint16_t*)&data[offset], &offset);
+
+
+    //QUESTION
+    char qname_buf[255];
+    int i;
+    for(i = 0; data[offset] != '\0'; i++){
+        qname_buf[i] = data[offset];
+        offset ++;
+    }
+    unw_msg.question.name = NULL;
+    if(i != 0){ //malloc(0) does not necessarilly returns NULL pointer
+        unw_msg.question.name = (char*) malloc(i);
+        strncpy(unw_msg.question.name, qname_buf, i);
+    }
+    
+    unw_msg.question.qtype = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.question.qclass = get_LE_word((uint16_t*)&data[offset], &offset);
+
+
+    //ANSWER
+    char rname_buf[255];
+    i = 0;
+    for(; data[offset] != '\0'; i++){
+        rname_buf[i] = data[offset];
+        offset ++;
+    }
+    unw_msg.answer.name = NULL;
+    if(i != 0){ //malloc(0) does not necessarilly returns NULL pointer
+        unw_msg.answer.name = (char*) malloc(i);
+        strncpy(unw_msg.answer.name, rname_buf, i);
+    }
+
+    unw_msg.answer.rtype = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.answer.rclass = get_LE_word((uint16_t*)&data[offset], &offset);
+    unw_msg.answer.ttl = get_LE_Dword((uint32_t*)&data[offset], &offset);
+    unw_msg.answer.rdlength = get_LE_word((uint16_t*)&data[offset], &offset);
+
+
+    //DATA
+    for(int i = 0; i < unw_msg.answer.rdlength; i++){
+        answer_databuf[i] = data[offset++];
+    }
 
     return unw_msg;
 }

@@ -1,6 +1,8 @@
 #include "dnsquery.h"
 
 //TODO: User defined record types
+//TODO: Use htonl/ntohl
+//TODO: Use char[255] on answer and question names, but only send necessary
 
 
 //Won't work:
@@ -8,6 +10,12 @@
 //empty answer name on first query (for strlen on wrap)
 //  -it either is completly empty or has a single null character
 //  -handling it like it's completly empty
+
+
+void DNSmsg_freeNames(struct DNSmsg *msg){
+    free(msg->question.name);
+    free(msg->answer.name);
+}
 
 void DNSmsg_configure(struct DNSmsg *message){
 
@@ -19,7 +27,7 @@ void DNSmsg_configure(struct DNSmsg *message){
     
     //Question section
     char name[20] = "www.example.com";
-    char enc_name[20];
+    char *enc_name = (char *) malloc(strlen(name) + 1);
     name_encode(name, enc_name);
     //printf("%s\n", buf);
     message->question.name = enc_name;
@@ -45,6 +53,7 @@ void name_encode(char *name, char *buf){
     while(token != NULL){
         token = strtok(NULL, s);
         if(token == NULL) break;
+
         buf[i] = strlen(token);
         strncpy(&buf[i+1], token, strlen(token));
         i+= strlen(token)+1;

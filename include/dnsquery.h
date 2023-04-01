@@ -71,6 +71,7 @@ typedef enum{
     QTYPE_ANY   = 255
 }QTYPE;
 
+void DNSmsg_freeNames(struct DNSmsg *msg);
 
 void DNSmsg_configure(struct DNSmsg *message);
 
