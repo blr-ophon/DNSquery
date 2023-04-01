@@ -56,6 +56,7 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
     printf("Sent %d bytes\n", bytes_sent);
+    msg_hexdump(query, query_size);
 
     //Receive response from DNS server
     uint8_t recv_buf[1024] = {0};
@@ -64,7 +65,8 @@ int main(int argc, char *argv[]){
         fprintf(stderr, "recvfrom() error: %d\n", errno);
         exit(EXIT_FAILURE);
     }
-    printf("Sent %d bytes\n", bytes_recv);
+    printf("Received %d bytes\n", bytes_recv);
+    msg_hexdump(recv_buf, bytes_recv);
 
     char answer_databuf[256];
     struct DNSmsg tested = DNSmsg_unwrap(recv_buf, answer_databuf);

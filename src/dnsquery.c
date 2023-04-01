@@ -111,6 +111,7 @@ void DNSmsg_print(struct DNSmsg *msg){
         printf("%c", msg->answer.rdata[i]);
     }
     printf("\n");
+
 }
 
 void DNSmsg_nameEncode(const char *const name, size_t namelen, char *buf){

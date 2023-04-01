@@ -12,5 +12,6 @@
 
 #include "dnsquery.h"
 #include "wrapper.h"
+#include "hexdump.h"
 
 #endif
