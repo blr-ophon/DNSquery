@@ -1,6 +1,12 @@
 #ifndef DNSQUERY_H
 #define DNSQUERY_H
 
+//TODO: Modularize:
+//-udp client file
+//-DNSmsg configuration and encoding
+//-DNSmsg receiving
+//-Interface (if using curses)
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -57,7 +63,21 @@ typedef enum{
     HF_RCODE_RFSD       = (5 << 12),    //Refused
 }HEADER_FLAGS;
 
+typedef enum{
+    QTYPE_A     = 1,
+    QTYPE_MX    = 15,
+    QTYPE_TXT   = 16,
+    QTYPE_AAAA  = 28,
+    QTYPE_ANY   = 255
+}QTYPE;
+
+
+void DNSmsg_configure(struct DNSmsg *message);
 
 void name_encode(char *name, char *buf);
+
+uint16_t to_bigendian16(uint16_t num);
+
+uint32_t to_bigendian32(uint32_t num);
 
 #endif
