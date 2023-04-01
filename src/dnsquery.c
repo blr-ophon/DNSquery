@@ -6,6 +6,8 @@
 //Won't work:
 //question and answer names initialized with local strings
 //empty answer name on first query (for strlen on wrap)
+//  -it either is completly empty or has a single null character
+//  -handling it like it's completly empty
 
 void DNSmsg_configure(struct DNSmsg *message){
 
@@ -24,9 +26,11 @@ void DNSmsg_configure(struct DNSmsg *message){
     message->question.qtype = QTYPE_A;     
     message->question.qclass = 1;    //internet
      
+    /*
     //Answer
     char answer_emptyname = '\0';
     message->answer.name = &answer_emptyname;
+    */
                                      
 }
 
@@ -67,6 +71,7 @@ uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     struct DNSmsg BE_msg;
     memset(&BE_msg, 0, sizeof(struct DNSmsg));
 
+    uint32_t offset = 0;
     //Header 
     BE_msg.header.id = to_bigendian16(message->header.id);
     BE_msg.header.flags = to_bigendian16(message->header.id);
@@ -74,14 +79,38 @@ uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     BE_msg.header.ancount = to_bigendian16(message->header.id);
     BE_msg.header.nscount = to_bigendian16(message->header.id);
     BE_msg.header.arcount = to_bigendian16(message->header.id);
-    memcpy(wrapped_msg, &BE_msg.header, sizeof(struct DNSmsg_header));
+    memcpy(&wrapped_msg[offset], &BE_msg.header, sizeof(struct DNSmsg_header));
+    offset += sizeof(struct DNSmsg_header);
 
     //Question
-    memcpy(wrapped_msg, message->question.name, strlen(message->question.name));
+    int q_namelen = strlen(message->question.name);
+    memcpy(&wrapped_msg[offset], message->question.name, q_namelen);
+    offset += q_namelen;
+
+    BE_msg.question.qtype = to_bigendian16(message->question.qtype);
+    BE_msg.question.qclass = to_bigendian16(message->question.qclass);
+    memcpy(&wrapped_msg[offset], &BE_msg.question.qtype, 32);
+    offset += 32;
 
 
     //Answer
-    memcpy(wrapped_msg, message->answer.name, strlen(message->answer.name));
+    if(message->answer.name != NULL){
+        int a_namelen = strlen(message->answer.name);
+        memcpy(&wrapped_msg[offset], message->answer.name, a_namelen);
+        offset += a_namelen;
+    }
+
+    BE_msg.answer.rtype = to_bigendian16(message->answer.rtype);
+    BE_msg.answer.rclass = to_bigendian16(message->answer.rclass);
+    memcpy(&wrapped_msg[offset], &BE_msg.answer.rtype, 32);
+    offset += 32;
+
+    BE_msg.answer.ttl = to_bigendian32(message->answer.ttl);
+    BE_msg.answer.rdlength = to_bigendian32(message->answer.rdlength);
+    memcpy(&wrapped_msg[offset], &BE_msg.answer.rtype, 48);
+    offset += 48;
+
+    memcpy(&wrapped_msg[offset], message->answer.rdata, message->answer.rdlength);
 
     return wrapped_msg;
 }
