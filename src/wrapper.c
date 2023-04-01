@@ -9,7 +9,7 @@ static uint32_t to_bigendian32(uint32_t num){
         ((num>>8)&0xff00) | ((num<<24)&0xff000000);
 }
 
-static uint16_t get_LE_Dword(uint32_t *dword, int *offset){
+static uint32_t get_LE_Dword(uint32_t *dword, int *offset){
     uint32_t num = *dword;
     num = ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
         ((num>>8)&0xff00) | ((num<<24)&0xff000000);
@@ -41,11 +41,11 @@ uint8_t *DNSmsg_wrap(struct DNSmsg *message){
     uint32_t offset = 0;
     //Header 
     BE_msg.header.id = to_bigendian16(message->header.id);
-    BE_msg.header.flags = to_bigendian16(message->header.id);
-    BE_msg.header.qdcount = to_bigendian16(message->header.id);
-    BE_msg.header.ancount = to_bigendian16(message->header.id);
-    BE_msg.header.nscount = to_bigendian16(message->header.id);
-    BE_msg.header.arcount = to_bigendian16(message->header.id);
+    BE_msg.header.flags = to_bigendian16(message->header.flags);
+    BE_msg.header.qdcount = to_bigendian16(message->header.qdcount);
+    BE_msg.header.ancount = to_bigendian16(message->header.ancount);
+    BE_msg.header.nscount = to_bigendian16(message->header.nscount);
+    BE_msg.header.arcount = to_bigendian16(message->header.arcount);
     memcpy(&wrapped_msg[offset], &BE_msg.header, sizeof(struct DNSmsg_header));
     offset += sizeof(struct DNSmsg_header);
 
@@ -77,7 +77,7 @@ uint8_t *DNSmsg_wrap(struct DNSmsg *message){
     offset += 2;
 
     BE_msg.answer.ttl = to_bigendian32(message->answer.ttl);
-    BE_msg.answer.rdlength = to_bigendian32(message->answer.rdlength);
+    BE_msg.answer.rdlength = to_bigendian16(message->answer.rdlength);
     memcpy(&wrapped_msg[offset], &BE_msg.answer.ttl, 4);
     offset += 4;
     memcpy(&wrapped_msg[offset], &BE_msg.answer.rdlength, 2);
@@ -109,6 +109,7 @@ struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
         qname_buf[i] = data[offset];
         offset ++;
     }
+    qname_buf[i] = data[offset++];  //append '\0'
     unw_msg.question.name = NULL;
     if(i != 0){ //malloc(0) does not necessarilly returns NULL pointer
         unw_msg.question.name = (char*) malloc(i);
@@ -126,7 +127,7 @@ struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
         rname_buf[i] = data[offset];
         offset ++;
     }
-    unw_msg.answer.name = NULL;
+    qname_buf[i] = data[offset++];  //append '\0'
     if(i != 0){ //malloc(0) does not necessarilly returns NULL pointer
         unw_msg.answer.name = (char*) malloc(i);
         strncpy(unw_msg.answer.name, rname_buf, i);
@@ -142,6 +143,7 @@ struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
     for(int i = 0; i < unw_msg.answer.rdlength; i++){
         answer_databuf[i] = data[offset++];
     }
+    unw_msg.answer.rdata = answer_databuf;
 
     return unw_msg;
 }

@@ -13,6 +13,7 @@
 //empty answer name on first query (for strlen on wrap)
 //  -it either is completly empty or has a single null character
 //  -handling it like it's completly empty
+//  -now handling it with a single null character
 
 
 void DNSmsg_freeNames(struct DNSmsg *msg){
@@ -27,6 +28,8 @@ void DNSmsg_configure(struct DNSmsg *message){
     message->header.id = 0xabcd;
     message->header.flags |= HF_RD;
     message->header.qdcount = 0x01; 
+
+
     
     //Question section
     char name[20] = "www.example.com";
@@ -38,17 +41,32 @@ void DNSmsg_configure(struct DNSmsg *message){
     message->question.qclass = 1;    //internet
      
     //Answer
-    message->answer.name = NULL;
-    /*
-    char answer_emptyname = '\0';
-    message->answer.name = &answer_emptyname;
-    */
+    message->answer.name = (char*) malloc(1);
+    message->answer.name[0] = '\0';
+
+    //FOR TEST
+    message->header.id= 0xabcd;
+    message->header.flags= 0xabcd;
+    message->header.qdcount = 0xabcd;
+    message->header.ancount = 0xabcd;
+    message->header.nscount = 0xabcd;
+    message->header.arcount = 0xabcd;
+
+    message->question.qtype = 0xabcd;
+    message->question.qclass = 0xabcd;
+
+    message->answer.rtype = 0xabcd;
+    message->answer.rclass = 0xabcd;
+    message->answer.ttl = 0xabcdef01;
+    message->answer.rdlength = 0x3;
+    message->answer.rdata = (char*) malloc(3);
+    message->answer.rdata = "123";
 }
 
 void DNSmsg_print(struct DNSmsg *msg){ 
     //HEADER
-    printf("\n--HEADER--\nID:%x\nFLAGS:%x\nQDCOUNT:%x\n"
-            "ANCOUNT:%x\nNSCOUNT:%x\nARCOUNT:%x\n",
+    printf("\n--HEADER--\nID:%#x\nFLAGS:%#x\nQDCOUNT:%#x\n"
+            "ANCOUNT:%#x\nNSCOUNT:%#x\nARCOUNT:%#x\n",
             msg->header.id,
             msg->header.flags,
             msg->header.qdcount,
@@ -64,7 +82,7 @@ void DNSmsg_print(struct DNSmsg *msg){
     }else{
         q_name[0] = '\0';
     }
-    printf("\n--QUESTION--\nNAME:%s\nQTYPE:%x\nQCLASS:%x\n",
+    printf("\n--QUESTION--\nNAME:%s\nQTYPE:%#x\nQCLASS:%#x\n",
             msg->question.name,
             msg->question.qtype,
             msg->question.qclass
@@ -77,8 +95,8 @@ void DNSmsg_print(struct DNSmsg *msg){
     }else{
         a_name[0] = '\0';
     }
-    printf("\n--ANSWER--\nNAME:%s\nTYPE:%x\nCLASS:%x\n"
-            "TTL:%x\nRDLENGTH:%d\n",
+    printf("\n--ANSWER--\nNAME:%s\nTYPE:%#x\nCLASS:%#x\n"
+            "TTL:%#x\nRDLENGTH:%#x\n",
             a_name,
             msg->answer.rtype,
             msg->answer.rclass,
@@ -90,6 +108,7 @@ void DNSmsg_print(struct DNSmsg *msg){
     for(int i = 0; i < msg->answer.rdlength; i++){
         printf("%c", msg->answer.rdata[i]);
     }
+    printf("\n");
 }
 
 void DNSmsg_nameEncode(const char *const name, size_t namelen, char *buf){
