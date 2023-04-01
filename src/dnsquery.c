@@ -31,7 +31,7 @@ void DNSmsg_configure(struct DNSmsg *message){
 
 
     //Question section
-    char name[20] = "google.com";
+    char name[20] = "www.google.com";
     char *enc_name = (char *) malloc(strlen(name) + 1);
     DNSmsg_nameEncode(name, strlen(name), enc_name);
     //printf("%s\n", buf);

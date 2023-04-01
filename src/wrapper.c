@@ -128,16 +128,21 @@ struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
 
 
     //ANSWER
-    char rname_buf[255];
-    i = 0;
-    for(; data[offset] != '\0'; i++){
-        rname_buf[i] = data[offset];
-        offset ++;
-    }
-    qname_buf[i] = data[offset++];  //append '\0'
-    if(i != 0){ //malloc(0) does not necessarilly returns NULL pointer
-        unw_msg.answer.name = (char*) malloc(i);
-        strncpy(unw_msg.answer.name, rname_buf, i);
+    if(!(data[offset] & 0xc0)){    //if not a pointer/ if it's a string
+        char rname_buf[255];
+        i = 0;
+        for(; data[offset] != '\0'; i++){
+            rname_buf[i] = data[offset];
+            offset ++;
+        }
+        qname_buf[i] = data[offset++];  //append '\0'
+        if(i != 0){ //malloc(0) does not necessarilly returns NULL pointer
+            unw_msg.answer.name = (char*) malloc(i);
+            strncpy(unw_msg.answer.name, rname_buf, i);
+        }
+    }else{
+        //rest of the bits and next byte are a pointer
+        offset += 2;
     }
 
     unw_msg.answer.rtype = get_LE_word((uint16_t*)&data[offset], &offset);

@@ -47,6 +47,7 @@ int main(int argc, char *argv[]){
     //struct DNSmsg tested = DNSmsg_unwrap(data, answer_databuf);
     //DNSmsg_print(&tested);
     
+    //wrap query and send to DNS server
     uint8_t *query = DNSmsg_wrap(&message);     
     size_t query_size = DNSmsg_getWrappedSize(&message);
     int bytes_sent = sendto(sockfd, query, query_size, 0, p->ai_addr, p->ai_addrlen);
@@ -56,7 +57,8 @@ int main(int argc, char *argv[]){
     }
     printf("Sent %d bytes\n", bytes_sent);
 
-    uint8_t recv_buf[1024];
+    //Receive response from DNS server
+    uint8_t recv_buf[1024] = {0};
     int bytes_recv = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, 0, 0);
     if(bytes_recv < 0){
         fprintf(stderr, "recvfrom() error: %d\n", errno);
