@@ -47,20 +47,20 @@ struct DNSmsg{
 };
 
 typedef enum{
-    HF_QR = (1 << 0),           //Query(0)/Response(1)
-    HF_OPCODE_STD = (0 << 1),   //Standard query
-    HF_OPCODE_REV = (1 << 1),   //Reverse query
-    HF_OPCODE_STR = (2 << 1),   //Status request
-    HF_AA = (1 << 5),   //Authoritative Answer
-    HF_TC = (1 << 6),   //Truncated (must be resent through TCP)
-    HF_RD = (1 << 7),   //Recursion
-    HF_RA = (1 << 8),   //Indicates in response if server supports recursion
-    HF_RCODE_NE         = (0 << 12),    //No error 
-    HF_RCODE_FORMAT     = (1 << 12),    //Format Error
-    HF_RCODE_SERVER     = (2 << 12),    //Server Failure
-    HF_RCODE_NAME       = (3 << 12),    //Name error
-    HF_RCODE_NOTIMP     = (4 << 12),    //Not Implemented
-    HF_RCODE_RFSD       = (5 << 12),    //Refused
+    HF_QR = (1 << 15),           //Query(0)/Response(1)
+    HF_OPCODE_STD = (0 << 11),   //Standard query
+    HF_OPCODE_REV = (1 << 11),   //Reverse query
+    HF_OPCODE_STR = (2 << 11),   //Status request
+    HF_AA = (1 << 10),   //Authoritative Answer
+    HF_TC = (1 << 9),   //Truncated (must be resent through TCP)
+    HF_RD = (1 << 8),   //Recursion
+    HF_RA = (1 << 7),   //Indicates in response if server supports recursion
+    HF_RCODE_NE         = (0 << 0),    //No error 
+    HF_RCODE_FORMAT     = (1 << 0),    //Format Error
+    HF_RCODE_SERVER     = (2 << 0),    //Server Failure
+    HF_RCODE_NAME       = (3 << 0),    //Name error
+    HF_RCODE_NOTIMP     = (4 << 0),    //Not Implemented
+    HF_RCODE_RFSD       = (5 << 0),    //Refused
 }HEADER_FLAGS;
 
 typedef enum{
