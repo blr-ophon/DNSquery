@@ -6,10 +6,10 @@
 //TODO: Use char[255] on answer and question names, but only send necessary
 //TODO: make qtype display record in string form on DNSmsg_print
 //TODO: ncurses display
+//TODO: check fixed size buffers
 
 
 //Won't work:
-//question and answer names initialized with local strings
 //empty answer name on first query (for strlen on wrap)
 //  -it either is completly empty or has a single null character
 //  -handling it like it's completly empty
@@ -30,9 +30,8 @@ void DNSmsg_configure(struct DNSmsg *message){
     message->header.qdcount = 0x01; 
 
 
-    
     //Question section
-    char name[20] = "www.example.com";
+    char name[20] = "google.com";
     char *enc_name = (char *) malloc(strlen(name) + 1);
     DNSmsg_nameEncode(name, strlen(name), enc_name);
     //printf("%s\n", buf);
@@ -40,27 +39,30 @@ void DNSmsg_configure(struct DNSmsg *message){
     message->question.qtype = QTYPE_A;     
     message->question.qclass = 1;    //internet
      
+
     //Answer
     message->answer.name = (char*) malloc(1);
     message->answer.name[0] = '\0';
 
     //FOR TEST
-    message->header.id= 0xabcd;
-    message->header.flags= 0xabcd;
-    message->header.qdcount = 0xabcd;
-    message->header.ancount = 0xabcd;
-    message->header.nscount = 0xabcd;
-    message->header.arcount = 0xabcd;
+    
+    //message->header.id= 0xabcd;
+    //message->header.flags= 0xabcd;
+    //message->header.qdcount = 0xabcd;
+    //message->header.ancount = 0xabcd;
+    //message->header.nscount = 0xabcd;
+    //message->header.arcount = 0xabcd;
 
-    message->question.qtype = 0xabcd;
-    message->question.qclass = 0xabcd;
+    //message->question.qtype = 0xabcd;
+    //message->question.qclass = 0xabcd;
 
-    message->answer.rtype = 0xabcd;
-    message->answer.rclass = 0xabcd;
-    message->answer.ttl = 0xabcdef01;
-    message->answer.rdlength = 0x3;
-    message->answer.rdata = (char*) malloc(3);
-    message->answer.rdata = "123";
+    //message->answer.rtype = 0xabcd;
+    //message->answer.rclass = 0xabcd;
+    //message->answer.ttl = 0xabcdef01;
+    //message->answer.rdlength = 0x3;
+    //message->answer.rdata = (char*) malloc(3);
+    //message->answer.rdata = "123";
+    
 }
 
 void DNSmsg_print(struct DNSmsg *msg){ 

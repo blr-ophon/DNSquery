@@ -24,15 +24,22 @@ static uint16_t get_LE_word(uint16_t *word, int *offset){
     return num;
 }
 
+size_t DNSmsg_getWrappedSize(struct DNSmsg *message){
+    size_t q_name_len = message->question.name == NULL? 0 : strlen(message->question.name) + 1;
+    size_t a_name_len = message->answer.name == NULL? 0 : strlen(message->answer.name) + 1;
+    size_t msg_size = sizeof(struct DNSmsg) + q_name_len + a_name_len
+         + message->answer.rdlength - 2*sizeof(void *);
+    //printf("%d\n", msg_size);
+    return msg_size;
+}
 
-uint8_t *DNSmsg_wrap(struct DNSmsg *message){
+uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     size_t q_name_len = message->question.name == NULL? 0 : strlen(message->question.name) + 1;
     size_t a_name_len = message->answer.name == NULL? 0 : strlen(message->answer.name) + 1;
 
     //Size = struct + name strings + data - 2*(pointer size)
     size_t msg_size = sizeof(struct DNSmsg) + q_name_len + a_name_len
          + message->answer.rdlength - 2*sizeof(void *);
-    //printf("%d\n", msg_size);
     uint8_t *wrapped_msg = (uint8_t*) malloc(msg_size);
 
     struct DNSmsg BE_msg;
