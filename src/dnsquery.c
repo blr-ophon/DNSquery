@@ -34,8 +34,9 @@ void DNSmsg_configure(struct DNSmsg *message){
     message->question.qtype = QTYPE_A;     
     message->question.qclass = 1;    //internet
      
-    /*
     //Answer
+    message->answer.name = NULL;
+    /*
     char answer_emptyname = '\0';
     message->answer.name = &answer_emptyname;
     */
@@ -61,12 +62,50 @@ void name_encode(char *name, char *buf){
     buf[i] = 0;
 }
 
-uint16_t to_bigendian16(uint16_t num){
-    return (num >> 8) | (num << 8);
-}
+void DNSmsg_print(struct DNSmsg *msg){ 
+    //HEADER
+    printf("\n--HEADER--\nID:%x\nFLAGS:%x\nQDCOUNT:%x\n"
+            "ANCOUNT:%x\nNSCOUNT:%x\nARCOUNT:%x\n",
+            msg->header.id,
+            msg->header.flags,
+            msg->header.qdcount,
+            msg->header.ancount,
+            msg->header.nscount,
+            msg->header.arcount
+    );
 
-uint32_t to_bigendian32(uint32_t num){
-    return ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
-        ((num>>8)&0xff00) | ((num<<24)&0xff000000);
+    //QUESTION
+    char q_name[255]; 
+    if(msg->question.name != NULL){
+        strncpy(q_name, msg->question.name, strlen(msg->question.name)+1);
+    }else{
+        q_name[0] = '\0';
+    }
+    printf("\n--QUESTION--\nNAME:%s\nQTYPE:%x\nQCLASS:%x\n",
+            msg->question.name,
+            msg->question.qtype,
+            msg->question.qclass
+    );
+
+    //ANSWER
+    char a_name[255]; 
+    if(msg->answer.name != NULL){
+        strncpy(a_name, msg->answer.name, strlen(msg->answer.name)+1);
+    }else{
+        a_name[0] = '\0';
+    }
+    printf("\n--ANSWER--\nNAME:%s\nTYPE:%x\nCLASS:%x\n"
+            "TTL:%x\nRDLENGTH:%d\n",
+            a_name,
+            msg->answer.rtype,
+            msg->answer.rclass,
+            msg->answer.ttl,
+            msg->answer.rdlength
+    );
+
+    printf("DATA:\n");
+    for(int i = 0; i < msg->answer.rdlength; i++){
+        printf("%c", msg->answer.rdata[i]);
+    }
 }
 

@@ -1,5 +1,14 @@
 #include "wrapper.h"
 
+uint16_t to_bigendian16(uint16_t num){
+    return (num >> 8) | (num << 8);
+}
+
+uint32_t to_bigendian32(uint32_t num){
+    return ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
+        ((num>>8)&0xff00) | ((num<<24)&0xff000000);
+}
+
 uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     //Size = struct + name strings + data - 2*(pointer size)
     uint8_t *wrapped_msg = (uint8_t*) malloc(sizeof(struct DNSmsg) +
