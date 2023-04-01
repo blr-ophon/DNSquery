@@ -32,9 +32,18 @@ int main(int argc, char *argv[]){
 
     //configure query 
     struct DNSmsg message;
-    DNSmsg_configure(&message);
+    DNSmsg_configure(&message);     
+    DNSmsg_print(&message);
+    uint8_t *data = DNSmsg_wrap(&message);
+    char answer_databuf[256];
+    struct DNSmsg tested = DNSmsg_unwrap(data, answer_databuf);
+    DNSmsg_print(&tested);
+    //uint8_t *query = DNSmsg_wrap(&message);     
 
 
 
+
+    //free(query);
+    DNSmsg_freeNames(&message);
     return 0;
 }

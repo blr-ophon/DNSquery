@@ -1,19 +1,39 @@
 #include "wrapper.h"
 
-uint16_t to_bigendian16(uint16_t num){
+static uint16_t to_bigendian16(uint16_t num){
     return (num >> 8) | (num << 8);
 }
 
-uint32_t to_bigendian32(uint32_t num){
+static uint32_t to_bigendian32(uint32_t num){
     return ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
         ((num>>8)&0xff00) | ((num<<24)&0xff000000);
 }
 
-uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
+static uint16_t get_LE_Dword(uint32_t *dword, int *offset){
+    uint32_t num = *dword;
+    num = ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
+        ((num>>8)&0xff00) | ((num<<24)&0xff000000);
+    *offset += 4;
+    return num;
+}
+
+static uint16_t get_LE_word(uint16_t *word, int *offset){
+    uint16_t num = *word;
+    num = (num >> 8) | (num << 8);
+    *offset += 2;
+    return num;
+}
+
+
+uint8_t *DNSmsg_wrap(struct DNSmsg *message){
+    size_t q_name_len = message->question.name == NULL? 0 : strlen(message->question.name) + 1;
+    size_t a_name_len = message->answer.name == NULL? 0 : strlen(message->answer.name) + 1;
+
     //Size = struct + name strings + data - 2*(pointer size)
-    uint8_t *wrapped_msg = (uint8_t*) malloc(sizeof(struct DNSmsg) +
-            strlen(message->question.name) + strlen(message->answer.name) +
-            message->answer.rdlength - 2*sizeof(void *));
+    size_t msg_size = sizeof(struct DNSmsg) + q_name_len + a_name_len
+         + message->answer.rdlength - 2*sizeof(void *);
+    //printf("%d\n", msg_size);
+    uint8_t *wrapped_msg = (uint8_t*) malloc(msg_size);
 
     struct DNSmsg BE_msg;
     memset(&BE_msg, 0, sizeof(struct DNSmsg));
@@ -30,53 +50,45 @@ uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     offset += sizeof(struct DNSmsg_header);
 
     //Question
-    int q_namelen = strlen(message->question.name);
-    memcpy(&wrapped_msg[offset], message->question.name, q_namelen);
-    offset += q_namelen;
+    if(message->question.name != NULL){
+        memcpy(&wrapped_msg[offset], message->question.name, q_name_len);
+        offset += q_name_len;
+    }
 
     BE_msg.question.qtype = to_bigendian16(message->question.qtype);
     BE_msg.question.qclass = to_bigendian16(message->question.qclass);
-    memcpy(&wrapped_msg[offset], &BE_msg.question.qtype, 32);
-    offset += 32;
+    memcpy(&wrapped_msg[offset], &BE_msg.question.qtype, 2);
+    offset += 2;
+    memcpy(&wrapped_msg[offset], &BE_msg.question.qclass, 2);
+    offset += 2;
 
 
     //Answer
     if(message->answer.name != NULL){
-        int a_namelen = strlen(message->answer.name);
-        memcpy(&wrapped_msg[offset], message->answer.name, a_namelen);
-        offset += a_namelen;
+        memcpy(&wrapped_msg[offset], message->answer.name, a_name_len);
+        offset += a_name_len;
     }
 
     BE_msg.answer.rtype = to_bigendian16(message->answer.rtype);
     BE_msg.answer.rclass = to_bigendian16(message->answer.rclass);
-    memcpy(&wrapped_msg[offset], &BE_msg.answer.rtype, 32);
-    offset += 32;
+    memcpy(&wrapped_msg[offset], &BE_msg.answer.rtype, 2);
+    offset += 2;
+    memcpy(&wrapped_msg[offset], &BE_msg.answer.rclass, 2);
+    offset += 2;
 
     BE_msg.answer.ttl = to_bigendian32(message->answer.ttl);
     BE_msg.answer.rdlength = to_bigendian32(message->answer.rdlength);
-    memcpy(&wrapped_msg[offset], &BE_msg.answer.rtype, 48);
-    offset += 48;
+    memcpy(&wrapped_msg[offset], &BE_msg.answer.ttl, 4);
+    offset += 4;
+    memcpy(&wrapped_msg[offset], &BE_msg.answer.rdlength, 2);
+    offset += 2;
 
     memcpy(&wrapped_msg[offset], message->answer.rdata, message->answer.rdlength);
 
     return wrapped_msg;
 }
-uint16_t get_LE_Dword(uint32_t *dword, int *offset){
-    uint32_t num = *dword;
-    num = ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
-        ((num>>8)&0xff00) | ((num<<24)&0xff000000);
-    *offset += 4;
-    return num;
-}
 
-uint16_t get_LE_word(uint16_t *word, int *offset){
-    uint16_t num = *word;
-    num = (num >> 8) | (num << 8);
-    *offset += 2;
-    return num;
-}
-
-struct DNSmsg DNSmsg_unwrap(char *data, char *answer_databuf){
+struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
     struct DNSmsg unw_msg;
     memset(&unw_msg, 0, sizeof(struct DNSmsg));
     int offset = 0;

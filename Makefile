@@ -25,8 +25,8 @@ clean:
 	rm -rf ${BUILD_DIR} ${EXEC}
 
 run: ${EXEC}
-	./$< 
+	./$< 8.8.8.8
 
 debug: ${EXEC}
-	cgdb ./$< 
+	cgdb --args ./$< 8.8.8.8
 

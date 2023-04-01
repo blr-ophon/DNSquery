@@ -1,8 +1,11 @@
 #include "dnsquery.h"
 
-//TODO: User defined record types
+//TODO: 255 and other numbers as constants on config.h
+//TODO: User defined record types and question name
 //TODO: Use htonl/ntohl
 //TODO: Use char[255] on answer and question names, but only send necessary
+//TODO: make qtype display record in string form on DNSmsg_print
+//TODO: ncurses display
 
 
 //Won't work:
@@ -28,7 +31,7 @@ void DNSmsg_configure(struct DNSmsg *message){
     //Question section
     char name[20] = "www.example.com";
     char *enc_name = (char *) malloc(strlen(name) + 1);
-    name_encode(name, enc_name);
+    DNSmsg_nameEncode(name, strlen(name), enc_name);
     //printf("%s\n", buf);
     message->question.name = enc_name;
     message->question.qtype = QTYPE_A;     
@@ -40,26 +43,6 @@ void DNSmsg_configure(struct DNSmsg *message){
     char answer_emptyname = '\0';
     message->answer.name = &answer_emptyname;
     */
-}
-
-void name_encode(char *name, char *buf){
-    int i = 0;
-    char s[2] = ".";
-
-    char *token = strtok(name, s);
-    buf[i] = strlen(token);
-    strncpy(&buf[i+1], token, strlen(token));
-    i+= strlen(token)+1;
-
-    while(token != NULL){
-        token = strtok(NULL, s);
-        if(token == NULL) break;
-
-        buf[i] = strlen(token);
-        strncpy(&buf[i+1], token, strlen(token));
-        i+= strlen(token)+1;
-    }
-    buf[i] = 0;
 }
 
 void DNSmsg_print(struct DNSmsg *msg){ 
@@ -107,5 +90,27 @@ void DNSmsg_print(struct DNSmsg *msg){
     for(int i = 0; i < msg->answer.rdlength; i++){
         printf("%c", msg->answer.rdata[i]);
     }
+}
+
+void DNSmsg_nameEncode(const char *const name, size_t namelen, char *buf){
+    int i = 0;
+    char s[2] = ".";
+
+    char name_cpy[255];
+    memcpy(name_cpy, name, namelen);
+    char *token = strtok(name_cpy, s);
+    buf[i] = strlen(token);
+    strncpy(&buf[i+1], token, strlen(token));
+    i+= strlen(token)+1;
+
+    while(token != NULL){
+        token = strtok(NULL, s);
+        if(token == NULL) break;
+
+        buf[i] = strlen(token);
+        strncpy(&buf[i+1], token, strlen(token));
+        i+= strlen(token)+1;
+    }
+    buf[i] = 0;
 }
 

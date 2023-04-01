@@ -11,5 +11,6 @@
 #include <netdb.h>
 
 #include "dnsquery.h"
+#include "wrapper.h"
 
 #endif

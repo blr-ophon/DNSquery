@@ -75,10 +75,8 @@ void DNSmsg_freeNames(struct DNSmsg *msg);
 
 void DNSmsg_configure(struct DNSmsg *message);
 
-void name_encode(char *name, char *buf);
+void DNSmsg_print(struct DNSmsg *msg);
 
-uint16_t to_bigendian16(uint16_t num);
-
-uint32_t to_bigendian32(uint32_t num);
+void DNSmsg_nameEncode(const char *const name, size_t namelen, char *buf);
 
 #endif
