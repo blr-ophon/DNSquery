@@ -6,6 +6,7 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
+    //get address info
     struct addrinfo hints;
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
@@ -18,6 +19,7 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
+    //Creae socket with the first working address
     int sockfd;
     struct addrinfo *p;
     for(p = peer_addrs; p != NULL; p = p->ai_next){
@@ -33,10 +35,11 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
 
-    //configure query 
+    //Create a query with user provided info
     struct DNSmsg message;
-    DNSmsg_configure(&message, argv[2], argv[3]);     
+    DNSmsg_createQuery(&message, argv[2], argv[3]);     
     
+
     //wrap query and send to DNS server
     uint8_t *query = DNSmsg_wrap(&message);     
     size_t query_size = DNSmsg_getWrappedSize(&message);
@@ -47,6 +50,7 @@ int main(int argc, char *argv[]){
     }
     printf("Sent %d bytes\n", bytes_sent);
 
+
     //Receive response from DNS server
     uint8_t recv_buf[MSG_BUF_SIZE] = {0};
     int bytes_recv = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, 0, 0);
@@ -55,8 +59,10 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
     printf("Received %d bytes\n", bytes_recv);
-    msg_hexdump(recv_buf, bytes_recv);
 
+
+    //Output to user
+    msg_hexdump(recv_buf, bytes_recv);
     char answer_databuf[ANSWER_DATABUF_SIZE];
     struct DNSmsg answer = DNSmsg_unwrap(recv_buf, answer_databuf);
     DNSmsg_print(&answer);

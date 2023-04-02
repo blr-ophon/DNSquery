@@ -1,12 +1,7 @@
 #include "dnsmsg.h"
 
-//TODO: User defined record types and question name
-//TODO: make qtype display record in string form on DNSmsg_print
-//TODO: ncurses display
-//TODO: check fixed size buffers
-
-
-void DNSmsg_configure(struct DNSmsg *message, char *hostname, char *record_type){
+//Creates a DNS question with information provided by user
+void DNSmsg_createQuery(struct DNSmsg *message, char *hostname, char *record_type){
 
     //Header section
     memset(message, 0, sizeof(struct DNSmsg));
@@ -55,7 +50,7 @@ uint16_t DNSmsg_getRecordCode(char *record_type){
     return 0;
 }
 
-
+//Encode hostname to the way the DNS server expects it.
 void DNSmsg_nameEncode(const char *const name, size_t namelen, char *buf){
     int i = 0;
     char s[2] = ".";

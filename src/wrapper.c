@@ -9,6 +9,7 @@ static uint32_t to_bigendian32(uint32_t num){
         ((num>>8)&0xff00) | ((num<<24)&0xff000000);
 }
 
+//Read the next 4 bytes and updates the offset
 static uint32_t get_LE_Dword(uint32_t *dword, int *offset){
     uint32_t num = *dword;
     num = ((num>>24)&0xff) | ((num<<8)&0xff0000) | 
@@ -17,6 +18,7 @@ static uint32_t get_LE_Dword(uint32_t *dword, int *offset){
     return num;
 }
 
+//Read the next 2 bytes and updates the offset
 static uint16_t get_LE_word(uint16_t *word, int *offset){
     uint16_t num = *word;
     num = (num >> 8) | (num << 8);
@@ -24,6 +26,7 @@ static uint16_t get_LE_word(uint16_t *word, int *offset){
     return num;
 }
 
+//Returns the total of bytes a DNSmsg struct should have when wrapped to byte array
 size_t DNSmsg_getWrappedSize(struct DNSmsg *message){
     size_t q_name_len = message->question.name == NULL? 0 : strlen(message->question.name) + 1;
     size_t a_name_len = message->answer.name == NULL? 0 : strlen(message->answer.name) + 1;
@@ -33,6 +36,7 @@ size_t DNSmsg_getWrappedSize(struct DNSmsg *message){
     return msg_size;
 }
 
+//Converts DNSmsg struct to a byte array in big endian format
 uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     size_t q_name_len = message->question.name == NULL? 0 : strlen(message->question.name) + 1;
     size_t a_name_len = message->answer.name == NULL? 0 : strlen(message->answer.name) + 1;
@@ -95,6 +99,7 @@ uint8_t *DNSmsg_wrap(const struct DNSmsg *const message){
     return wrapped_msg;
 }
 
+//Converts a byte array in big endian format to DNSmsg in little endian format
 struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
     struct DNSmsg unw_msg;
     memset(&unw_msg, 0, sizeof(struct DNSmsg));

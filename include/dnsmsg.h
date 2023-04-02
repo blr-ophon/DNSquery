@@ -6,8 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
-
 #define MAX_NAMELEN 255
 
 struct DNSmsg_header{
@@ -71,7 +69,7 @@ typedef enum{
 }QTYPE;
 
 
-void DNSmsg_configure(struct DNSmsg *message, char *hostname, char *record_type);
+void DNSmsg_createQuery(struct DNSmsg *message, char *hostname, char *record_type);
 
 uint16_t DNSmsg_getRecordCode(char *record_type);
 
