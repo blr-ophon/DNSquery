@@ -1,16 +1,14 @@
-#ifndef DNSQUERY_H
-#define DNSQUERY_H
-
-//TODO: Modularize:
-//-udp client file
-//-DNSmsg configuration and encoding
-//-DNSmsg receiving
-//-Interface (if using curses)
+#ifndef DNSMSG_H
+#define DNSMSG_H
 
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "config.h"
+
+#define MAX_NAMELEN 255
 
 struct DNSmsg_header{
     uint16_t id;            //any 16bit value chosen by the client
@@ -64,19 +62,21 @@ typedef enum{
 }HEADER_FLAGS;
 
 typedef enum{
-    QTYPE_A     = 1,
-    QTYPE_MX    = 15,
-    QTYPE_TXT   = 16,
-    QTYPE_AAAA  = 28,
-    QTYPE_ANY   = 255
+    QTYPE_A     = 1,    //IPv4
+    QTYPE_CNAME = 5,    //Canonical Name
+    QTYPE_MX    = 15,   //Mail exchange
+    QTYPE_TXT   = 16,   //Text Record
+    QTYPE_AAAA  = 28,   //IPv6
+    QTYPE_ANY   = 255   //All cached records
 }QTYPE;
 
-void DNSmsg_freeNames(struct DNSmsg *msg);
 
-void DNSmsg_configure(struct DNSmsg *message);
+void DNSmsg_configure(struct DNSmsg *message, char *hostname, char *record_type);
 
-void DNSmsg_print(struct DNSmsg *msg);
+uint16_t DNSmsg_getRecordCode(char *record_type);
 
 void DNSmsg_nameEncode(const char *const name, size_t namelen, char *buf);
+
+void DNSmsg_freeNames(struct DNSmsg *msg);
 
 #endif

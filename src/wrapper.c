@@ -110,7 +110,7 @@ struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
 
 
     //QUESTION
-    char qname_buf[255];
+    char qname_buf[MAX_NAMELEN];
     int i;
     for(i = 0; data[offset] != '\0'; i++){
         qname_buf[i] = data[offset];
@@ -129,7 +129,7 @@ struct DNSmsg DNSmsg_unwrap(uint8_t *data, char *answer_databuf){
 
     //ANSWER
     if(!(data[offset] & 0xc0)){    //if not a pointer/ if it's a string
-        char rname_buf[255];
+        char rname_buf[MAX_NAMELEN];
         i = 0;
         for(; data[offset] != '\0'; i++){
             rname_buf[i] = data[offset];

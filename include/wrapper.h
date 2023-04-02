@@ -1,7 +1,7 @@
 #ifndef WRAPPER_H
 #define WRAPPER_H
 
-#include "dnsquery.h"
+#include "dnsmsg.h"
 
 
 size_t DNSmsg_getWrappedSize(struct DNSmsg *message);

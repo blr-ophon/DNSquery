@@ -10,8 +10,12 @@
 #include <sys/socket.h>
 #include <netdb.h>
 
-#include "dnsquery.h"
+#include "dnsmsg.h"
 #include "wrapper.h"
-#include "hexdump.h"
+#include "msgoutput.h"
+
+#define DNS_PORT "53"
+#define MSG_BUF_SIZE 1024
+#define ANSWER_DATABUF_SIZE 256
 
 #endif

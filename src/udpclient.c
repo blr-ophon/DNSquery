@@ -1,10 +1,8 @@
 #include "udpclient.h"
 
-#define DNS_PORT "53"
-
 int main(int argc, char *argv[]){
-    if(argc < 2){
-        fprintf(stderr, "Provide DNS server address\n");
+    if(argc < 4){
+        fprintf(stderr, "Usage: dnsq <DNS server> <hostname> <record type>");
         exit(EXIT_FAILURE);
     }
 
@@ -37,15 +35,7 @@ int main(int argc, char *argv[]){
 
     //configure query 
     struct DNSmsg message;
-    DNSmsg_configure(&message);     
-    DNSmsg_print(&message);
-
-    //for test
-    //DNSmsg_print(&message);
-    //uint8_t *data = DNSmsg_wrap(&message);
-    //char answer_databuf[256];
-    //struct DNSmsg tested = DNSmsg_unwrap(data, answer_databuf);
-    //DNSmsg_print(&tested);
+    DNSmsg_configure(&message, argv[2], argv[3]);     
     
     //wrap query and send to DNS server
     uint8_t *query = DNSmsg_wrap(&message);     
@@ -56,10 +46,9 @@ int main(int argc, char *argv[]){
         exit(EXIT_FAILURE);
     }
     printf("Sent %d bytes\n", bytes_sent);
-    msg_hexdump(query, query_size);
 
     //Receive response from DNS server
-    uint8_t recv_buf[1024] = {0};
+    uint8_t recv_buf[MSG_BUF_SIZE] = {0};
     int bytes_recv = recvfrom(sockfd, recv_buf, sizeof(recv_buf), 0, 0, 0);
     if(bytes_recv < 0){
         fprintf(stderr, "recvfrom() error: %d\n", errno);
@@ -68,12 +57,13 @@ int main(int argc, char *argv[]){
     printf("Received %d bytes\n", bytes_recv);
     msg_hexdump(recv_buf, bytes_recv);
 
-    char answer_databuf[256];
-    struct DNSmsg tested = DNSmsg_unwrap(recv_buf, answer_databuf);
-    DNSmsg_print(&tested);
+    char answer_databuf[ANSWER_DATABUF_SIZE];
+    struct DNSmsg answer = DNSmsg_unwrap(recv_buf, answer_databuf);
+    DNSmsg_print(&answer);
 
-
-    free(query);
+    //Free memory
     DNSmsg_freeNames(&message);
+    free(query);
+    DNSmsg_freeNames(&answer);
     return 0;
 }

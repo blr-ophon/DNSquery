@@ -24,9 +24,10 @@ ${BUILD_DIR}/%.o: ${SRC_DIR}/%.c ${HEADERS}
 clean:
 	rm -rf ${BUILD_DIR} ${EXEC}
 
-run: ${EXEC}
-	./$< 8.8.8.8
+testrun: ${EXEC}
+	./$< 8.8.8.8 example.com AAAA
 
 debug: ${EXEC}
-	cgdb --args ./$< 8.8.8.8
+	cgdb --args ./$< 8.8.8.8 example.com AAAA
+
 
